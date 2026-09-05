@@ -25,3 +25,5 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check licenses sources
+      - name: REUSE compliance
+        run: pipx run reuse lint
