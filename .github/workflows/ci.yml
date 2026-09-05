@@ -17,3 +17,11 @@ jobs:
         run: cargo test --workspace
       - name: Build agent
         run: cargo build -p sixgrok-agent
+
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check licenses sources

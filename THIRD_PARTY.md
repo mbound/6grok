@@ -10,10 +10,26 @@
 4. Required license and NOTICE texts are preserved under `LICENSES/` and/or adjacent to imported components.
 5. GPL/AGPL code is not copied, translated line-for-line, or linked into the MIT 6grok binaries.
 6. GPL tools may be supported as **separate external programs** over stable interfaces such as files, pipes, UDP/GSMTAP, sockets or subprocess invocation, without incorporating their source into 6grok.
-7. LGPL/MPL/CDDL and other weak/file-level copyleft code requires an explicit licensing review before import.
+7. Weak/file-level copyleft dependencies (for example MPL/LGPL/CDDL) are avoided by default even where they can legally coexist in a larger MIT work; adding one requires explicit review.
 8. Protocol facts, packet layouts, numeric constants and behavior learned from public documentation are implemented independently in original 6grok code. References are documented where useful.
 
-## Current dependencies / references
+## Shipped Rust dependency policy
+
+Current direct Rust dependencies are permissively licensed:
+
+| Dependency | License used by 6grok |
+|---|---|
+| `fivegrok-parser` | MIT |
+| `anyhow` | MIT option of `MIT OR Apache-2.0` |
+| `clap` | MIT option of `MIT OR Apache-2.0` |
+| `crc` | MIT option of `MIT OR Apache-2.0` |
+| `nix` | MIT |
+| `serde` | MIT option of `MIT OR Apache-2.0` |
+| `serde_json` | MIT option of `MIT OR Apache-2.0` |
+
+The earlier bootstrap briefly used the `serialport` crate. It was removed before merge because it is MPL-2.0; POSIX termios access is now implemented through MIT-licensed `nix` instead.
+
+## Telecom projects used as dependencies/references
 
 | Project | License | Use in 6grok | Status |
 |---|---|---|---|

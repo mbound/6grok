@@ -45,7 +45,7 @@ rustup target add aarch64-unknown-linux-musl
 cargo build --release --target aarch64-unknown-linux-musl -p sixgrok-agent
 ```
 
-The produced executable is named `6grok-agent`. The agent deliberately builds `serialport` without its `libudev` feature to keep the OpenWrt dependency surface small.
+The produced executable is named `6grok-agent`. Live TTY access uses POSIX termios through the MIT-licensed `nix` crate, avoiding libudev and non-permissive serial-library dependencies.
 
 ## Qualcomm passive capture
 
@@ -90,6 +90,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 ## Licensing rule
 
 6grok's original code is MIT licensed. We do **not** copy code from GPL projects such as QCSuper or SCAT into the MIT codebase. They may be used as protocol references or supported as optional external processes/interfaces.
+
+The shipped Rust dependency policy is permissive-only: MIT, Apache-2.0, BSD, ISC, Zlib and similarly reviewed permissive licenses. Weak/file-level copyleft dependencies are avoided by default even when legally combinable with MIT, to keep redistribution simple.
 
 Permissively licensed third-party code may be imported only when its original copyright, SPDX marker, license and any required NOTICE material are preserved. See [`THIRD_PARTY.md`](THIRD_PARTY.md).
 

@@ -15,5 +15,5 @@ sixgrok-core = { path = "../6grok-core" }
 anyhow.workspace = true
 clap.workspace = true
 crc.workspace = true
+nix.workspace = true
 serde_json.workspace = true
-serialport.workspace = true

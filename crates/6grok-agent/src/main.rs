@@ -1,16 +1,17 @@
 //! 6grok edge acquisition agent.
 //!
 //! The initial backend implements passive Qualcomm DIAG HDLC ingestion without
-//! incorporating code from GPL diagnostic projects.
+//! incorporating source code from GPL diagnostic projects.
 
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use crc::{Crc, CRC_16_IBM_SDLC};
+use nix::sys::termios::{self, BaudRate, ControlFlags, SetArg};
 use sixgrok_core::{parser_payload, qualcomm_log_code, CaptureFrame, Vendor};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{self, Read};
 use std::path::PathBuf;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 const DIAG_CRC: Crc<u16> = Crc::<u16>::new(&CRC_16_IBM_SDLC);
 
@@ -63,10 +64,7 @@ fn main() -> Result<()> {
     match cli.command {
         Command::Serial { port, baud, vendor } => {
             ensure_mvp_vendor(vendor)?;
-            let reader = serialport::new(&port, baud)
-                .timeout(Duration::from_millis(250))
-                .open()
-                .with_context(|| format!("opening diagnostic serial port {port}"))?;
+            let reader = open_serial(&port, baud)?;
             run_stream(reader, vendor.into())
         }
         Command::Replay { path, vendor } => {
@@ -85,6 +83,52 @@ fn ensure_mvp_vendor(vendor: VendorArg) -> Result<()> {
     Ok(())
 }
 
+/// Open a POSIX TTY in raw 8N1 mode using the MIT-licensed `nix` crate.
+///
+/// USB modem diagnostic endpoints generally ignore baud rate, while UART-backed
+/// modules may require it. We intentionally avoid the MPL-2.0 `serialport` crate
+/// to keep the shipped dependency set permissively licensed.
+fn open_serial(path: &str, baud: u32) -> Result<File> {
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path)
+        .with_context(|| format!("opening diagnostic serial port {path}"))?;
+
+    let mut attrs = termios::tcgetattr(&file)
+        .with_context(|| format!("reading termios settings for {path}"))?;
+    termios::cfmakeraw(&mut attrs);
+
+    attrs.control_flags.remove(
+        ControlFlags::CSIZE | ControlFlags::PARENB | ControlFlags::CSTOPB,
+    );
+    attrs.control_flags.insert(
+        ControlFlags::CS8 | ControlFlags::CLOCAL | ControlFlags::CREAD,
+    );
+
+    let rate = baud_rate(baud)?;
+    termios::cfsetispeed(&mut attrs, rate)?;
+    termios::cfsetospeed(&mut attrs, rate)?;
+    termios::tcsetattr(&file, SetArg::TCSANOW, &attrs)
+        .with_context(|| format!("configuring raw serial mode for {path}"))?;
+
+    Ok(file)
+}
+
+fn baud_rate(baud: u32) -> Result<BaudRate> {
+    Ok(match baud {
+        9_600 => BaudRate::B9600,
+        19_200 => BaudRate::B19200,
+        38_400 => BaudRate::B38400,
+        57_600 => BaudRate::B57600,
+        115_200 => BaudRate::B115200,
+        230_400 => BaudRate::B230400,
+        460_800 => BaudRate::B460800,
+        921_600 => BaudRate::B921600,
+        _ => bail!("unsupported termios baud rate {baud}; use one of 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600"),
+    })
+}
+
 fn run_stream<R: Read>(mut reader: R, vendor: Vendor) -> Result<()> {
     let start = Instant::now();
     let mut sequence = 0_u64;
@@ -95,7 +139,7 @@ fn run_stream<R: Read>(mut reader: R, vendor: Vendor) -> Result<()> {
         let n = match reader.read(&mut buf) {
             Ok(0) => break,
             Ok(n) => n,
-            Err(err) if err.kind() == io::ErrorKind::TimedOut => continue,
+            Err(err) if err.kind() == io::ErrorKind::Interrupted => continue,
             Err(err) => return Err(err.into()),
         };
 
@@ -151,9 +195,11 @@ struct QualcommHdlcDecoder {
 impl QualcommHdlcDecoder {
     /// Feed one byte from a Qualcomm DIAG HDLC stream.
     ///
-    /// Frames are delimited by 0x7e. 0x7d escapes the following byte, which is
-    /// XORed with 0x20. The final two unescaped bytes are the little-endian
-    /// CCITT/X.25 FCS and are removed before returning the DIAG packet.
+    /// Protocol facts independently implemented here: frames are delimited by
+    /// 0x7e; 0x7d escapes the next byte using XOR 0x20; the final two unescaped
+    /// bytes are a little-endian CCITT/X.25 FCS. Public DIAG documentation and
+    /// multiple independent tools describe this wire format; no implementation
+    /// source was copied into this file.
     fn push(&mut self, byte: u8) -> Option<Result<Vec<u8>, FrameError>> {
         match byte {
             0x7e => {
