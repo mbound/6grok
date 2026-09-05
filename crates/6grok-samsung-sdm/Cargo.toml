@@ -1,0 +1,17 @@
+[package]
+name = "sixgrok-samsung-sdm"
+version = "0.1.0"
+edition.workspace = true
+license = "GPL-2.0-or-later"
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "6grok-samsung-sdm"
+path = "src/main.rs"
+
+[dependencies]
+sixgrok-core = { path = "../6grok-core" }
+anyhow.workspace = true
+clap.workspace = true
+serde_json.workspace = true
