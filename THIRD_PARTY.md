@@ -11,7 +11,7 @@
 5. `GPL-2.0-or-later` code may participate in the GPLv3 application by selecting GPLv3 terms. `GPL-2.0-only` code must not be linked or copied into that combined work.
 6. `GPL-3.0-only` is rejected by default because it would remove the project's intended "or later" licensing option. Review explicitly if ever needed.
 7. AGPL is not accepted by default. MPL/LGPL/CDDL and other weak/file-level copyleft licenses require explicit architecture and redistribution review before use.
-8. Required license and NOTICE material is retained under `LICENSES/`, alongside vendored material, or both.
+8. Standard SPDX license texts are retained under `LICENSES/`; upstream-specific license/NOTICE copies may be retained under `THIRD_PARTY_LICENSES/` or alongside vendored material.
 9. Protocol facts, packet layouts and numeric constants are not treated as source-code imports, but references should still be recorded when useful.
 
 ## Import checklist
@@ -22,7 +22,7 @@ Every copied or adapted third-party source file must record:
 - immutable upstream commit/tag;
 - original upstream path;
 - SPDX license identifier;
-- original copyright holder(s);
+- original upstream copyright holder(s);
 - whether the file is copied verbatim or modified;
 - a short modification/provenance notice when changed;
 - location of the corresponding license and NOTICE text.
@@ -51,7 +51,7 @@ It is MIT licensed and states copyright:
 
 > Copyright (c) 2024 5grok Contributors
 
-Its MIT text remains preserved in `LICENSES/fivegrok-parser-MIT.txt`. The parser is not relicensed by its use inside a GPL-covered 6grok executable.
+Its upstream-specific MIT copy remains preserved in `THIRD_PARTY_LICENSES/fivegrok-parser-MIT.txt`, while the standard MIT text used by REUSE is in `LICENSES/MIT.txt`. The parser is not relicensed by its use inside a GPL-covered 6grok executable.
 
 ## QCSuper
 
