@@ -1,5 +1,7 @@
 //! 6grok aggregation/API service.
 
+mod gsmtap;
+
 use anyhow::{Context, Result};
 use axum::{
     extract::{
@@ -11,9 +13,10 @@ use axum::{
     Json, Router,
 };
 use clap::Parser;
+use gsmtap::{GsmtapSink, GSMTAP_UDP_PORT};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use sixgrok_core::{decode_wire_frame, CaptureFrame};
+use sixgrok_core::{decode_wire_frame, CaptureFrame, Vendor};
 use std::{
     collections::{BTreeMap, VecDeque},
     net::SocketAddr,
@@ -41,6 +44,10 @@ struct Cli {
     /// Number of most recent decoded packets retained in memory.
     #[arg(long, default_value_t = 5000)]
     history: usize,
+    /// Mirror Qualcomm DIAG frames to Wireshark using GSMTAP type QC_DIAG.
+    /// Example: --gsmtap 127.0.0.1:4729
+    #[arg(long)]
+    gsmtap: Option<String>,
 }
 
 #[derive(Clone)]
@@ -48,6 +55,7 @@ struct AppState {
     store: Arc<RwLock<Store>>,
     live: broadcast::Sender<String>,
     history_limit: usize,
+    gsmtap: Option<Arc<GsmtapSink>>,
 }
 
 struct Store {
@@ -82,6 +90,7 @@ struct Stats {
     fully_decoded: u64,
     decode_ratio: f64,
     live_subscribers: usize,
+    gsmtap_enabled: bool,
     by_vendor: BTreeMap<String, u64>,
     by_rat: BTreeMap<String, u64>,
     by_layer: BTreeMap<String, u64>,
@@ -98,10 +107,24 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     let history_limit = cli.history.max(1);
     let (live, _) = broadcast::channel(2048);
+    let gsmtap = cli
+        .gsmtap
+        .as_deref()
+        .map(GsmtapSink::connect)
+        .transpose()
+        .context("creating GSMTAP UDP sink")?
+        .map(Arc::new);
+    if let Some(destination) = &cli.gsmtap {
+        eprintln!(
+            "6grok-api: mirroring Qualcomm DIAG to GSMTAP {destination} (canonical port is {GSMTAP_UDP_PORT})"
+        );
+    }
+
     let state = AppState {
         store: Arc::new(RwLock::new(Store::new())),
         live,
         history_limit,
+        gsmtap,
     };
 
     let ingest_state = state.clone();
@@ -151,6 +174,7 @@ async fn stats(State(state): State<AppState>) -> Json<Stats> {
         fully_decoded: store.fully_decoded,
         decode_ratio: ratio,
         live_subscribers: state.live.receiver_count(),
+        gsmtap_enabled: state.gsmtap.is_some(),
         by_vendor: store.by_vendor.clone(),
         by_rat: store.by_rat.clone(),
         by_layer: store.by_layer.clone(),
@@ -230,6 +254,15 @@ async fn ingest_client(mut stream: TcpStream, state: AppState) -> Result<()> {
 }
 
 async fn process_frame(frame: CaptureFrame, state: &AppState) -> Result<()> {
+    if frame.vendor == Vendor::Qualcomm {
+        if let Some(sink) = &state.gsmtap {
+            if let Some(raw_diag) = frame.payload.get(2..) {
+                sink.send_qc_diag(raw_diag)
+                    .context("sending Qualcomm DIAG frame over GSMTAP")?;
+            }
+        }
+    }
+
     let decoded = frame.decode();
     let value = serde_json::to_value(&decoded).context("serializing decoded packet")?;
     let text = serde_json::to_string(&decoded).context("encoding live packet JSON")?;
@@ -272,7 +305,6 @@ fn unix_ms() -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sixgrok_core::Vendor;
 
     #[tokio::test]
     async fn process_frame_updates_store() {
@@ -281,6 +313,7 @@ mod tests {
             store: Arc::new(RwLock::new(Store::new())),
             live,
             history_limit: 2,
+            gsmtap: None,
         };
         let frame = CaptureFrame {
             sequence: 1,
