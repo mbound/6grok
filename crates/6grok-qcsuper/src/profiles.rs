@@ -1,6 +1,8 @@
+// SPDX-FileCopyrightText: 2026 mbound
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Log-code selections adapted from P1sec/QCSuper:
+//   repository: https://github.com/P1sec/QCSuper
 //   upstream commit: aa555b4f7f25f7a8bf4e5afd4dcb884edf2f6735
 //   upstream path: src/qcsuper/modules/_enable_log_mixin.py
 // QCSuper declares GPL-3.0+ / GPL-3.0-or-later. The pinned upstream file has
