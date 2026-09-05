@@ -1,0 +1,9 @@
+/target
+**/target
+*.qmdl
+*.sdm
+*.pcap
+*.pcapng
+captures/
+logs/
+.DS_Store

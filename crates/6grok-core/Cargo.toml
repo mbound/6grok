@@ -1,0 +1,15 @@
+[package]
+name = "sixgrok-core"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "sixgrok_core"
+
+[dependencies]
+fivegrok-parser.workspace = true
+serde.workspace = true
+serde_json.workspace = true
