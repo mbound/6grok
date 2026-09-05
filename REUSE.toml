@@ -1,0 +1,41 @@
+version = 1
+
+[[annotations]]
+path = [
+  ".github/workflows/ci.yml",
+  ".gitignore",
+  "Cargo.toml",
+  "README.md",
+  "THIRD_PARTY.md",
+  "deny.toml",
+  "docs/API.md",
+  "docs/ARCHITECTURE.md",
+  "docs/LICENSING.md",
+  "docs/MULTI_VENDOR.md",
+  "docs/PROTOCOL_REFERENCES.md",
+  "docs/QUALCOMM_CONTROL.md",
+  "docs/WIRESHARK.md",
+  "crates/6grok-core/Cargo.toml",
+  "crates/6grok-core/src/lib.rs",
+  "crates/6grok-api/Cargo.toml",
+  "crates/6grok-api/src/main.rs",
+  "crates/6grok-api/src/gsmtap.rs",
+]
+SPDX-FileCopyrightText = "2026 mbound"
+SPDX-License-Identifier = "MIT OR GPL-3.0-or-later"
+
+[[annotations]]
+path = [
+  "crates/6grok-agent/Cargo.toml",
+  "crates/6grok-agent/src/main.rs",
+  "crates/6grok-agent/src/profiles.rs",
+  "crates/6grok-agent/src/qualcomm.rs",
+  "crates/6grok-agent/src/vendor_records.rs",
+]
+SPDX-FileCopyrightText = "2026 mbound"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "THIRD_PARTY_LICENSES/fivegrok-parser-MIT.txt"
+SPDX-FileCopyrightText = "2024 5grok Contributors"
+SPDX-License-Identifier = "MIT"
