@@ -1,0 +1,38 @@
+name: Canonicalize GPL license
+
+on:
+  push:
+    branches:
+      - chore/licensing-architecture
+
+permissions:
+  contents: write
+
+jobs:
+  canonicalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/licensing-architecture
+      - name: Install canonical GPLv3 text
+        run: |
+          set -euo pipefail
+          test -f /usr/share/common-licenses/GPL-3
+          cp /usr/share/common-licenses/GPL-3 LICENSE
+          mkdir -p LICENSES
+          cp /usr/share/common-licenses/GPL-3 LICENSES/GPL-3.0-or-later.txt
+          test "$(git hash-object LICENSE)" = "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7"
+          test "$(git hash-object LICENSES/GPL-3.0-or-later.txt)" = "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7"
+      - name: Commit canonical license
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add LICENSE LICENSES/GPL-3.0-or-later.txt
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Install canonical GPL-3.0 license text"
+          git push origin HEAD:chore/licensing-architecture
