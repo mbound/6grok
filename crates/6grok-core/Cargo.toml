@@ -11,5 +11,6 @@ name = "sixgrok_core"
 
 [dependencies]
 fivegrok-parser.workspace = true
+rmp-serde.workspace = true
 serde.workspace = true
 serde_json.workspace = true
