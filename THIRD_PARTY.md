@@ -55,15 +55,40 @@ Its upstream-specific MIT copy remains preserved in `THIRD_PARTY_LICENSES/fivegr
 
 ## QCSuper
 
-QCSuper declares GPL-3.0+ / GPL-3.0-or-later. Its code may now be copied or adapted into GPL-covered 6grok application components. When this is done, keep upstream copyright/license information and add a provenance comment identifying the upstream commit and source path.
+QCSuper is currently pinned for provenance at:
+
+`aa555b4f7f25f7a8bf4e5afd4dcb884edf2f6735` (QCSuper 2.1.3, 2026-07-23)
+
+QCSuper declares GPL-3.0+ / GPL-3.0-or-later. Its code may be copied or adapted into GPL-covered 6grok application components. The first integration is `crates/6grok-qcsuper`, a Rust interoperability backend for QCSuper's Android `/dev/diag` TCP bridge.
+
+Upstream material used for that backend:
+
+| Upstream path | 6grok use |
+|---|---|
+| `src/qcsuper/inputs/adb.py` | bridge address/transport behavior and HDLC-over-TCP interoperability |
+| `src/qcsuper/inputs/adb_bridge/adb_bridge.c` | bridge framing/stream behavior and Android `/dev/diag` implementation reference |
+| `src/qcsuper/modules/_enable_log_mixin.py` | translated/adapted signaling and IP/DPL capture selections |
+| `src/qcsuper/inputs/_hdlc_mixin.py` | DIAG HDLC interoperability reference |
+
+The bridge client itself is written in Rust for 6grok and carries GPL-3.0-or-later SPDX metadata. QCSuper-derived log selections explicitly record the upstream commit/path in source comments. The standard GPLv3 text is retained under `LICENSES/GPL-3.0-or-later.txt` and as the repository root `LICENSE`.
 
 Do not move QCSuper-derived code into a component advertised as MIT-only. If functionality needs to be shared with a permissive library, isolate an independently written interface/data model from the GPL-derived implementation.
 
+### Qualcomm log-mask semantics cross-check
+
+QCSuper calls the range value a log-mask bit size in parts of its implementation, but Qualcomm DIAG sources and Osmocom model the protocol field as inclusive `last_item`. 6grok therefore deliberately retains an inclusive mask length of `floor(last_item / 8) + 1` bytes. This is covered by regression tests, including a boundary where `last_item == 8` and bit 8 must occupy a second byte.
+
+References used for this protocol cross-check include Qualcomm `diaglog.c` implementations and `osmocom/osmo-qcdiag/src/diag_log.c`; no Qualcomm source is copied into the dual-licensed core.
+
 ## SCAT
+
+SCAT is currently pinned for provenance at:
+
+`361ff551a4fbb30789c46750c00586682a7a9b26` (2026-09-03)
 
 SCAT declares `GPL-2.0-or-later`. This is compatible with the GPLv3 6grok application because the "or later" grant permits selecting GPLv3 terms for the combined work.
 
-SCAT-derived files must retain their `GPL-2.0-or-later` identity and copyright. Do not rewrite their file-level SPDX identifier to GPL-3.0 merely because the combined binary is distributed under GPLv3 terms.
+SCAT is being used to corroborate Qualcomm DIAG behavior and as the primary implementation reference for native Shannon/MediaTek acquisition work. SCAT-derived files must retain their `GPL-2.0-or-later` identity and copyright. Do not rewrite their file-level SPDX identifier to GPL-3.0 merely because the complete executable is conveyed under compatible GPLv3 terms.
 
 ## Apache/BSD sources
 
