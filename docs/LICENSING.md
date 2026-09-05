@@ -67,15 +67,9 @@ Every copied or translated/adapted upstream source file must retain or add enoug
 7. date/summary of material modifications;
 8. retained license and NOTICE location.
 
-A typical adapted QCSuper-derived Rust module should carry a notice similar to:
+A typical adapted QCSuper-derived Rust module should state the GPL-3.0-or-later SPDX identifier, the pinned upstream repository/commit/path, and the date/summary of the 6grok modification.
 
-```text
-SPDX-License-Identifier: GPL-3.0-or-later
-Derived from P1sec/QCSuper, commit <sha>, <upstream/path>
-Modified for 6grok: <date and short description>
-```
-
-A SCAT-derived module carries `SPDX-License-Identifier: GPL-2.0-or-later` and records the pinned SCAT commit/source paths. The exact SCAT GPLv2 text used by this repository is hash-verified and retained under `LICENSES/GPL-2.0-or-later.txt`.
+A SCAT-derived module uses the SPDX license value `GPL-2.0-or-later` and records the pinned SCAT commit/source paths. The exact SCAT GPLv2 text used by this repository is hash-verified and retained under `LICENSES/GPL-2.0-or-later.txt`.
 
 ## Permissive reusable boundary
 
