@@ -11,7 +11,7 @@ This document describes the repository policy; it is not a substitute for legal 
 | `sixgrok-agent` combined application | `GPL-3.0-or-later` |
 | Original reusable `sixgrok-core` | `MIT OR GPL-3.0-or-later` |
 | Original reusable `sixgrok-api` | `MIT OR GPL-3.0-or-later` |
-| Original source files identified as dual licensed by SPDX/DEP5 | `MIT OR GPL-3.0-or-later` |
+| Original source files identified as dual licensed by SPDX/REUSE metadata | `MIT OR GPL-3.0-or-later` |
 | `fivegrok-parser` | upstream `MIT`, retained unchanged |
 | QCSuper-derived source | upstream `GPL-3.0-or-later`, retained |
 | SCAT-derived source | upstream `GPL-2.0-or-later`, retained |
@@ -81,7 +81,7 @@ A SCAT-derived file should continue to identify itself as `GPL-2.0-or-later`; it
 
 GPL-derived acquisition implementations belong in the GPL application side of the architecture, not in `sixgrok-core`.
 
-` sixgrok-core` should contain neutral data models, wire formats, original decoders/utilities, and permissively licensed code only. This preserves its useful MIT reuse option.
+`sixgrok-core` should contain neutral data models, wire formats, original decoders/utilities, and permissively licensed code only. This preserves its useful MIT reuse option.
 
 A good dependency direction is therefore:
 
@@ -113,7 +113,7 @@ If 6grok is embedded in a consumer product, GPLv3's installation-information pro
 
 - Cargo package metadata states the intended component license.
 - `cargo-deny` rejects licenses outside the reviewed compatibility allowlist.
-- REUSE/DEP5 metadata assigns licenses to current files without using a broad wildcard that could accidentally classify a future imported GPL file as MIT.
+- `REUSE.toml` assigns licenses to current files without using a broad wildcard that could accidentally classify a future imported GPL file as MIT.
 - `THIRD_PARTY.md` records project-level provenance and import requirements.
 - Imported code must be reviewed file-by-file before merge.
 
