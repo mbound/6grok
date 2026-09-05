@@ -4,6 +4,7 @@ members = [
     "crates/6grok-agent",
     "crates/6grok-api",
     "crates/6grok-qcsuper",
+    "crates/6grok-samsung-sdm",
 ]
 resolver = "2"
 
