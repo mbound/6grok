@@ -15,8 +15,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Test workspace
         run: cargo test --workspace
-      - name: Build agent
-        run: cargo build -p sixgrok-agent
+      - name: Build workspace
+        run: cargo build --workspace
 
   licenses:
     runs-on: ubuntu-latest
