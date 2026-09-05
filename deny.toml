@@ -1,6 +1,9 @@
 # cargo-deny policy for code shipped as part of 6grok.
-# Keep the normal dependency graph permissive-only. Additions outside this list
-# require an explicit licensing review and THIRD_PARTY.md update.
+#
+# 6grok is a multi-license repository. The complete agent/application may
+# incorporate GPL-3.0-or-later code, while reusable original components can be
+# dual-licensed MIT OR GPL-3.0-or-later. Only licenses explicitly reviewed for
+# compatibility with that architecture are allowed here.
 
 [licenses]
 confidence-threshold = 0.8
@@ -12,7 +15,16 @@ allow = [
     "ISC",
     "Zlib",
     "Unicode-3.0",
+    "GPL-2.0-or-later",
+    "GPL-3.0-or-later",
 ]
+
+# Intentionally NOT allowed by default:
+# - GPL-2.0-only: incompatible with a GPLv3 combined application.
+# - GPL-3.0-only: would remove the repository's "or later" option.
+# - AGPL: materially different network-source obligations; requires explicit review.
+# - MPL/LGPL/CDDL: may be legally combinable in some configurations but add
+#   file/library-level obligations; review before adding rather than silently accepting.
 
 [bans]
 multiple-versions = "warn"
