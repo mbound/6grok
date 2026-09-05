@@ -3,6 +3,7 @@ members = [
     "crates/6grok-core",
     "crates/6grok-agent",
     "crates/6grok-api",
+    "crates/6grok-qcsuper",
 ]
 resolver = "2"
 
