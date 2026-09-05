@@ -13,9 +13,12 @@ use qualcomm::{
     parse_log_config_header, retrieve_id_ranges_request, set_mask_request, HdlcDecoder,
     LOG_CONFIG_DISABLE_OP, LOG_CONFIG_RETRIEVE_ID_RANGES_OP, LOG_CONFIG_SET_MASK_OP,
 };
-use sixgrok_core::{parser_payload, qualcomm_log_code, CaptureFrame, Vendor};
+use sixgrok_core::{
+    encode_wire_frame, parser_payload, qualcomm_log_code, CaptureFrame, Vendor,
+};
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write};
+use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
@@ -47,6 +50,9 @@ enum Command {
         /// Save normalized CaptureFrame objects as JSON Lines.
         #[arg(long)]
         frame_capture: Option<PathBuf>,
+        /// Stream normalized frames to a 6grok-api ingest listener, e.g. 10.0.0.2:5566.
+        #[arg(long)]
+        server: Option<String>,
     },
     /// Query the modem's DIAG log equipment-ID ranges without changing masks.
     Probe {
@@ -70,6 +76,9 @@ enum Command {
         /// Save normalized CaptureFrame objects as JSON Lines.
         #[arg(long)]
         frame_capture: Option<PathBuf>,
+        /// Stream replayed frames to a 6grok-api ingest listener.
+        #[arg(long)]
+        server: Option<String>,
     },
 }
 
@@ -100,6 +109,7 @@ fn main() -> Result<()> {
             logs,
             raw_capture,
             frame_capture,
+            server,
         } => {
             ensure_mvp_vendor(vendor)?;
             let mut reader = open_serial(&port, baud)?;
@@ -112,6 +122,7 @@ fn main() -> Result<()> {
                 true,
                 open_optional(raw_capture.as_deref())?,
                 open_optional(frame_capture.as_deref())?,
+                WireSink::connect_optional(server.as_deref())?,
             )
         }
         Command::Probe { port, baud } => {
@@ -139,6 +150,7 @@ fn main() -> Result<()> {
             path,
             vendor,
             frame_capture,
+            server,
         } => {
             ensure_mvp_vendor(vendor)?;
             let reader = File::open(&path)
@@ -149,6 +161,7 @@ fn main() -> Result<()> {
                 false,
                 None,
                 open_optional(frame_capture.as_deref())?,
+                WireSink::connect_optional(server.as_deref())?,
             )
         }
     }
@@ -302,6 +315,7 @@ fn run_stream<R: Read>(
     live: bool,
     mut raw_capture: Option<File>,
     mut frame_capture: Option<File>,
+    mut wire_sink: Option<WireSink>,
 ) -> Result<()> {
     let start = Instant::now();
     let mut sequence = 0_u64;
@@ -351,6 +365,9 @@ fn run_stream<R: Read>(
                 serde_json::to_writer(&mut *file, &frame)?;
                 file.write_all(b"\n")?;
             }
+            if let Some(sink) = wire_sink.as_mut() {
+                sink.send(&frame)?;
+            }
 
             let decoded = frame.decode();
             println!("{}", serde_json::to_string(&decoded)?);
@@ -364,6 +381,38 @@ fn run_stream<R: Read>(
         file.flush()?;
     }
     Ok(())
+}
+
+struct WireSink {
+    stream: TcpStream,
+}
+
+impl WireSink {
+    fn connect_optional(address: Option<&str>) -> Result<Option<Self>> {
+        address
+            .map(|address| {
+                let stream = TcpStream::connect(address)
+                    .with_context(|| format!("connecting to 6grok-api ingest at {address}"))?;
+                stream
+                    .set_nodelay(true)
+                    .context("enabling TCP_NODELAY for 6grok-api uplink")?;
+                eprintln!("6grok-agent: streaming frames to {address}");
+                Ok(Self { stream })
+            })
+            .transpose()
+    }
+
+    fn send(&mut self, frame: &CaptureFrame) -> Result<()> {
+        let payload = encode_wire_frame(frame).context("encoding MessagePack agent frame")?;
+        let len = u32::try_from(payload.len()).context("agent frame exceeds u32 wire length")?;
+        self.stream
+            .write_all(&len.to_be_bytes())
+            .context("writing agent frame length")?;
+        self.stream
+            .write_all(&payload)
+            .context("writing agent MessagePack frame")?;
+        Ok(())
+    }
 }
 
 fn open_optional(path: Option<&Path>) -> Result<Option<File>> {
