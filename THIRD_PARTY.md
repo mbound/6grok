@@ -21,13 +21,18 @@ Current direct Rust dependencies are permissively licensed:
 |---|---|
 | `fivegrok-parser` | MIT |
 | `anyhow` | MIT option of `MIT OR Apache-2.0` |
+| `axum` | MIT |
 | `clap` | MIT option of `MIT OR Apache-2.0` |
 | `crc` | MIT option of `MIT OR Apache-2.0` |
 | `nix` | MIT |
+| `rmp-serde` | MIT |
 | `serde` | MIT option of `MIT OR Apache-2.0` |
 | `serde_json` | MIT option of `MIT OR Apache-2.0` |
+| `tokio` | MIT |
 
 The earlier bootstrap briefly used the `serialport` crate. It was removed before merge because it is MPL-2.0; POSIX termios access is now implemented through MIT-licensed `nix` instead.
+
+`cargo-deny` checks the complete transitive Rust dependency graph in CI against the repository's permissive-license allowlist and approved git-source list.
 
 ## Telecom projects used as dependencies/references
 

@@ -1,16 +1,20 @@
 [package]
-name = "sixgrok-core"
+name = "sixgrok-api"
 version = "0.1.0"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
-[lib]
-name = "sixgrok_core"
+[[bin]]
+name = "6grok-api"
+path = "src/main.rs"
 
 [dependencies]
-fivegrok-parser.workspace = true
-rmp-serde.workspace = true
+sixgrok-core = { path = "../6grok-core" }
+anyhow.workspace = true
+axum.workspace = true
+clap.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+tokio.workspace = true
