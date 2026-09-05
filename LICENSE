@@ -1,21 +1,27 @@
-MIT License
+6grok licensing notice
 
 Copyright (c) 2026 mbound
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The 6grok repository is intentionally multi-licensed.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The complete 6grok applications and distributions that incorporate GPL-derived
+components are licensed under the GNU General Public License version 3 or (at
+your option) any later version (GPL-3.0-or-later).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Original reusable 6grok components and files may be offered under
+MIT OR GPL-3.0-or-later where their SPDX metadata says so. This preserves a
+permissive reuse path for genuinely independent infrastructure while allowing
+the same code to be combined into the GPL application.
+
+Third-party source code retains its original copyright and license. Inclusion
+in this repository does not relicense third-party material. File-level SPDX
+metadata, THIRD_PARTY.md and the LICENSES/ directory are authoritative for
+individual files and imported components.
+
+When licenses differ, the terms of every applicable license must be satisfied.
+In particular, a distributed combined work containing GPL-covered code is
+conveyed under the compatible GPL terms even when some constituent files are
+also available under permissive licenses.
+
+See docs/LICENSING.md and THIRD_PARTY.md for the repository policy and
+provenance requirements.
