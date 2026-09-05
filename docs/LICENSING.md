@@ -8,7 +8,9 @@ This document describes the repository policy; it is not a substitute for legal 
 
 | Component/material | License policy |
 |---|---|
-| `sixgrok-agent` combined application | `GPL-3.0-or-later` |
+| `sixgrok-agent` application | `GPL-3.0-or-later` |
+| `sixgrok-qcsuper` QCSuper interoperability backend | `GPL-3.0-or-later` |
+| `sixgrok-samsung-sdm` SCAT-derived Shannon collector | `GPL-2.0-or-later` |
 | Original reusable `sixgrok-core` | `MIT OR GPL-3.0-or-later` |
 | Original reusable `sixgrok-api` | `MIT OR GPL-3.0-or-later` |
 | Original source files identified as dual licensed by SPDX/REUSE metadata | `MIT OR GPL-3.0-or-later` |
@@ -17,34 +19,33 @@ This document describes the repository policy; it is not a substitute for legal 
 | SCAT-derived source | upstream `GPL-2.0-or-later`, retained |
 | Apache/BSD/MIT imports | retain their exact upstream license and notices |
 
-The repository root `LICENSE` contains the GNU GPL version 3 text because the complete 6grok agent/application distribution is GPL-covered once GPL-derived modem components are incorporated.
+The repository root `LICENSE` contains GNU GPL version 3 because the principal 6grok agent/application distribution is GPL-3.0-or-later. File/component-specific terms remain authoritative where explicitly assigned, and standard GPLv2-or-later material is also retained under `LICENSES/GPL-2.0-or-later.txt`.
 
 ## Dual licensing does not relicense imports
 
 `MIT OR GPL-3.0-or-later` applies only where the copyright holder has offered those choices. It does **not** convert an imported GPL, Apache, BSD or MIT file into another license.
 
-For example:
+The architecture supports both of these legitimate combinations:
 
 ```text
-sixgrok-core source               MIT OR GPL-3.0-or-later
-fivegrok-parser source            MIT
-SCAT-derived Samsung module       GPL-2.0-or-later
-QCSuper-derived Qualcomm module   GPL-3.0-or-later
-
-              linked into sixgrok-agent
-                         |
-                         v
-             combined distributed work
-                  GPL-3.0-or-later
+sixgrok-core (MIT OR GPL-3+)       sixgrok-core (MIT OR GPL-3+)
+        |                                  |
+        | choose GPL-3+                    | choose MIT
+        v                                  v
+sixgrok-qcsuper / agent             sixgrok-samsung-sdm
+      GPL-3+                            GPL-2+
 ```
 
-The original file-level licenses and notices remain applicable to those files inside the combined work.
+A SCAT-derived file continues to identify itself as `GPL-2.0-or-later`. It is not relabeled GPLv3 merely because GPL-2.0-or-later could alternatively be used under GPLv3 terms in another combined work.
 
 ## GPL version compatibility rule
 
-SCAT declares `GPL-2.0-or-later`. The `or-later` grant permits use under GPLv3 terms when it is combined with a GPLv3 application.
+SCAT declares `GPL-2.0-or-later`. The `or-later` grant permits either:
 
-QCSuper declares GPL-3.0+ / GPL-3.0-or-later and therefore fits the same combined GPLv3 application.
+- keeping a standalone SCAT-derived component under `GPL-2.0-or-later` while linking separately dual-licensed libraries under a compatible permissive grant; or
+- selecting GPLv3 terms when SCAT-derived material is actually combined into a GPLv3 work.
+
+QCSuper declares GPL-3.0+ / GPL-3.0-or-later and fits the GPLv3 application side directly.
 
 The following are **not accepted automatically**:
 
@@ -61,7 +62,7 @@ Every copied or translated/adapted upstream source file must retain or add enoug
 2. immutable upstream commit/tag;
 3. original source path;
 4. upstream SPDX/license;
-5. upstream copyright holder(s);
+5. upstream copyright holder(s), where stated upstream;
 6. whether 6grok changed or translated the file;
 7. date/summary of material modifications;
 8. retained license and NOTICE location.
@@ -71,34 +72,24 @@ A typical adapted QCSuper-derived Rust module should carry a notice similar to:
 ```text
 SPDX-License-Identifier: GPL-3.0-or-later
 Derived from P1sec/QCSuper, commit <sha>, <upstream/path>
-Upstream copyright: <preserved copyright notice>
 Modified for 6grok: <date and short description>
 ```
 
-A SCAT-derived file should continue to identify itself as `GPL-2.0-or-later`; it should not be relabeled GPLv3 merely because the complete executable is conveyed under compatible GPLv3 terms.
+A SCAT-derived module carries `SPDX-License-Identifier: GPL-2.0-or-later` and records the pinned SCAT commit/source paths. The exact SCAT GPLv2 text used by this repository is hash-verified and retained under `LICENSES/GPL-2.0-or-later.txt`.
 
 ## Permissive reusable boundary
 
-GPL-derived acquisition implementations belong in the GPL application side of the architecture, not in `sixgrok-core`.
+GPL-derived acquisition implementations belong in GPL components, not in `sixgrok-core`.
 
-`sixgrok-core` should contain neutral data models, wire formats, original decoders/utilities, and permissively licensed code only. This preserves its useful MIT reuse option.
-
-A good dependency direction is therefore:
+`sixgrok-core` contains neutral data models, wire formats, original decoders/utilities, and permissively/dual-licensed code. This preserves its MIT reuse option and allows a GPL-2.0-or-later standalone collector to consume the common `CaptureFrame`/MessagePack model under MIT without a license-version conflict.
 
 ```text
-              sixgrok-core
-          MIT OR GPL-3.0-or-later
-                    ^
-                    |
-      +-------------+-------------+
-      |                           |
-sixgrok-api                 sixgrok-agent
-MIT OR GPL-3+                   GPL-3+
-                                   |
-                    +--------------+--------------+
-                    |                             |
-             QCSuper-derived                SCAT-derived
-                GPL-3+                       GPL-2+
+                         sixgrok-core
+                    MIT OR GPL-3.0-or-later
+                   /          |           \
+             choose MIT   choose GPL3   choose GPL3
+                /             |             \
+   samsung-sdm GPL-2+     agent GPL-3+   qcsuper GPL-3+
 ```
 
 ## Distribution obligations
@@ -107,7 +98,7 @@ When distributing a GPL-covered 6grok binary, make the corresponding source avai
 
 For releases, the preferred model is to publish the exact source revision, build scripts/configuration and retained license notices alongside binaries from the same release/tag.
 
-If 6grok is embedded in a consumer product, GPLv3's installation-information provisions may also become relevant depending on how the product is distributed and controlled.
+GPLv3 installation-information provisions can become relevant for GPLv3-covered software distributed in a qualifying User Product. Evaluate the obligations of the **actual component/license being conveyed**, rather than assuming every executable in the repository has the same GPL version.
 
 ## Repository enforcement
 
