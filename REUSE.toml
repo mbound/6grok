@@ -37,6 +37,11 @@ SPDX-FileCopyrightText = "2026 mbound"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
+path = "crates/6grok-samsung-sdm/Cargo.toml"
+SPDX-FileCopyrightText = "2026 mbound"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
 path = "THIRD_PARTY_LICENSES/fivegrok-parser-MIT.txt"
 SPDX-FileCopyrightText = "2024 5grok Contributors"
 SPDX-License-Identifier = "MIT"
