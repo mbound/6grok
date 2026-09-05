@@ -1,0 +1,18 @@
+[package]
+name = "sixgrok-qcsuper"
+version = "0.1.0"
+edition.workspace = true
+license = "GPL-3.0-or-later"
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "6grok-qcsuper"
+path = "src/main.rs"
+
+[dependencies]
+sixgrok-core = { path = "../6grok-core" }
+anyhow.workspace = true
+clap.workspace = true
+crc.workspace = true
+serde_json.workspace = true

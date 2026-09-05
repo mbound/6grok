@@ -31,6 +31,7 @@ path = [
   "crates/6grok-agent/src/profiles.rs",
   "crates/6grok-agent/src/qualcomm.rs",
   "crates/6grok-agent/src/vendor_records.rs",
+  "crates/6grok-qcsuper/Cargo.toml",
 ]
 SPDX-FileCopyrightText = "2026 mbound"
 SPDX-License-Identifier = "GPL-3.0-or-later"

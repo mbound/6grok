@@ -15,6 +15,8 @@ The working implementation currently provides:
 - passive Qualcomm DIAG capture and raw replay;
 - active Qualcomm `DIAG_LOG_CONFIG_F` capability probing and log-mask configuration;
 - capability-aware `signaling`, `radio` and `full` Qualcomm profiles;
+- GPL QCSuper interoperability backend for rooted Android `/dev/diag` through QCSuper `adb_bridge`;
+- QCSuper-derived signaling and IP/DPL capture profiles with pinned provenance;
 - normalized JSONL capture/replay;
 - MediaTek 9-byte parser-record ingestion;
 - Samsung MIPC-style and raw-PDU ingestion using the parser's synthetic namespaces;
@@ -26,19 +28,19 @@ The working implementation currently provides:
 ```text
 modem / phone
      |
-     | DIAG / SDM / vendor trace
+     | DIAG / QCSuper bridge / SDM / vendor trace
      v
-+-------------+       +-------------+       +------------------+
-| 6grok-agent | ----> | 6grok-core  | ----> | fivegrok-parser  |
-+-------------+       +-------------+       +------------------+
-       |                     |                       |
-       | raw capture         | MessagePack           | decoded packets
-       v                     v                       v
-    replay              +-----------+          JSON / history
-                        | 6grok-api |
-                        +-----------+
-                         /    |     \
-                       REST   WS   GSMTAP -> Wireshark
++----------------+     +-------------+       +------------------+
+| 6grok-agent /  | --> | 6grok-core  | ----> | fivegrok-parser  |
+| 6grok-qcsuper  |     +-------------+       +------------------+
++----------------+            |                       |
+       |                       | MessagePack           | decoded packets
+       v                       v                       v
+ raw / JSONL              +-----------+          JSON / history
+                          | 6grok-api |
+                          +-----------+
+                           /    |     \
+                         REST   WS   GSMTAP -> Wireshark
 ```
 
 ## Build
@@ -55,9 +57,9 @@ rustup target add aarch64-unknown-linux-musl
 cargo build --release --target aarch64-unknown-linux-musl -p sixgrok-agent
 ```
 
-The produced executable is named `6grok-agent`.
+The primary edge executable is named `6grok-agent`. The GPL QCSuper interoperability executable is `6grok-qcsuper`.
 
-## Qualcomm capture
+## Qualcomm serial/USB capture
 
 Passive capture from a modem that is already producing DIAG logs:
 
@@ -96,6 +98,45 @@ Replay a raw Qualcomm capture:
 ```bash
 cargo run -p sixgrok-agent -- replay capture.bin
 ```
+
+## Rooted Android via QCSuper
+
+`6grok-qcsuper` interoperates with the TCP endpoint created by QCSuper's GPL `adb_bridge`. This is useful on Qualcomm Android devices where `/dev/diag` requires the diagchar setup logic already implemented and tested by QCSuper.
+
+QCSuper's default bridge port is TCP 43555. Once its bridge is running and forwarded by ADB, probe the modem from 6grok:
+
+```bash
+cargo run -p sixgrok-qcsuper -- probe
+```
+
+Capture QCSuper's established signaling selection:
+
+```bash
+cargo run -p sixgrok-qcsuper -- capture --profile signaling
+```
+
+Capture Qualcomm IP/DPL records:
+
+```bash
+cargo run -p sixgrok-qcsuper -- capture --profile ip
+```
+
+Or request the union and send normalized frames directly to a remote API service:
+
+```bash
+cargo run -p sixgrok-qcsuper -- capture \
+  --profile full \
+  --frame-capture android.jsonl \
+  --server 10.0.0.2:5566
+```
+
+For a non-default forwarded endpoint:
+
+```bash
+cargo run -p sixgrok-qcsuper -- capture --bridge 127.0.0.1:43556 --profile signaling
+```
+
+The backend does not vendor QCSuper's Android executable. QCSuper remains the source of the on-device `/dev/diag` bridge; 6grok speaks its HDLC-over-TCP interface and performs DIAG log configuration itself. The integration is pinned to QCSuper commit `aa555b4f7f25f7a8bf4e5afd4dcb884edf2f6735` and its source-level provenance is recorded in [`THIRD_PARTY.md`](THIRD_PARTY.md).
 
 ## Service / remote agents
 
@@ -149,10 +190,10 @@ See [`docs/MULTI_VENDOR.md`](docs/MULTI_VENDOR.md).
 
 6grok intentionally uses a **multi-license architecture**.
 
-- The combined `6grok-agent` application is `GPL-3.0-or-later`.
+- The combined `6grok-agent` application and `sixgrok-qcsuper` backend are `GPL-3.0-or-later`.
 - Original reusable `sixgrok-core` and `sixgrok-api` code is available under `MIT OR GPL-3.0-or-later` where indicated by repository metadata.
 - Third-party files retain their exact upstream license, copyright and notices.
-- QCSuper (`GPL-3.0-or-later`) and SCAT (`GPL-2.0-or-later`) source may be reused/adapted in the GPL application with explicit provenance.
+- QCSuper (`GPL-3.0-or-later`) and SCAT (`GPL-2.0-or-later`) source may be reused/adapted in GPL application components with explicit provenance.
 - MIT, Apache-2.0 and compatible BSD material may also be incorporated while retaining its original terms.
 - `GPL-2.0-only`, AGPL and other licenses outside the reviewed compatibility policy are not imported into the combined application without explicit review.
 
@@ -164,7 +205,7 @@ The root [`LICENSE`](LICENSE) contains the GPLv3 license text. See [`docs/LICENS
 
 - native MediaTek mdlogger/CCCI acquisition;
 - validated native Samsung Shannon SDM acquisition;
-- additional Qualcomm Android/USB transports and QCSuper-derived capabilities;
+- direct Android diagchar backend where it adds value beyond QCSuper bridge interoperability;
 - GPS/NMEA/gpsd synchronized location frames;
 - AT-monitor fallback for DIAG-locked devices;
 - persistent capture/database backend;
