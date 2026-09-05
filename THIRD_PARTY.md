@@ -1,66 +1,87 @@
 # Third-party licensing and provenance
 
-6grok is an MIT-licensed project. This file records which upstream projects may influence the implementation and what may or may not be copied into this repository.
+6grok is a multi-license project. The combined 6grok application may include GPL-covered components, while original reusable components can remain available under permissive terms. This file records upstream provenance and the rules for importing code without erasing upstream rights or obligations.
 
-## Policy
+## Repository licensing model
 
-1. **Original 6grok source code is MIT.**
-2. Third-party code is imported only when its license is compatible with distribution inside this project.
-3. Imported files keep their original copyright/SPDX headers and remain under their original license where required. The repository's top-level MIT license does not erase those terms.
-4. Required license and NOTICE texts are preserved under `LICENSES/` and/or adjacent to imported components.
-5. GPL/AGPL code is not copied, translated line-for-line, or linked into the MIT 6grok binaries.
-6. GPL tools may be supported as **separate external programs** over stable interfaces such as files, pipes, UDP/GSMTAP, sockets or subprocess invocation, without incorporating their source into 6grok.
-7. Weak/file-level copyleft dependencies (for example MPL/LGPL/CDDL) are avoided by default even where they can legally coexist in a larger MIT work; adding one requires explicit review.
-8. Protocol facts, packet layouts, numeric constants and behavior learned from public documentation are implemented independently in original 6grok code. References are documented where useful.
+1. The complete `6grok-agent` application is distributed under **GPL-3.0-or-later**.
+2. Original reusable 6grok files/components may be **MIT OR GPL-3.0-or-later** when their SPDX metadata says so.
+3. Third-party files **retain their original license and copyright**. The top-level project license never silently relicenses imported material.
+4. A combined executable containing GPL-covered code is distributed under compatible GPL terms even when constituent files are also available under permissive licenses.
+5. `GPL-2.0-or-later` code may participate in the GPLv3 application by selecting GPLv3 terms. `GPL-2.0-only` code must not be linked or copied into that combined work.
+6. `GPL-3.0-only` is rejected by default because it would remove the project's intended "or later" licensing option. Review explicitly if ever needed.
+7. AGPL is not accepted by default. MPL/LGPL/CDDL and other weak/file-level copyleft licenses require explicit architecture and redistribution review before use.
+8. Required license and NOTICE material is retained under `LICENSES/`, alongside vendored material, or both.
+9. Protocol facts, packet layouts and numeric constants are not treated as source-code imports, but references should still be recorded when useful.
 
-## Shipped Rust dependency policy
+## Import checklist
 
-Current direct Rust dependencies are permissively licensed:
+Every copied or adapted third-party source file must record:
 
-| Dependency | License used by 6grok |
-|---|---|
-| `fivegrok-parser` | MIT |
-| `anyhow` | MIT option of `MIT OR Apache-2.0` |
-| `axum` | MIT |
-| `clap` | MIT option of `MIT OR Apache-2.0` |
-| `crc` | MIT option of `MIT OR Apache-2.0` |
-| `nix` | MIT |
-| `rmp-serde` | MIT |
-| `serde` | MIT option of `MIT OR Apache-2.0` |
-| `serde_json` | MIT option of `MIT OR Apache-2.0` |
-| `tokio` | MIT |
+- upstream project and canonical repository;
+- immutable upstream commit/tag;
+- original upstream path;
+- SPDX license identifier;
+- original copyright holder(s);
+- whether the file is copied verbatim or modified;
+- a short modification/provenance notice when changed;
+- location of the corresponding license and NOTICE text.
 
-The earlier bootstrap briefly used the `serialport` crate. It was removed before merge because it is MPL-2.0; POSIX termios access is now implemented through MIT-licensed `nix` instead.
+Prefer an SPDX header in the imported file. Do not replace an upstream SPDX identifier with the repository's preferred license.
 
-`cargo-deny` checks the complete transitive Rust dependency graph in CI against the repository's permissive-license allowlist and approved git-source list.
+## Telecom projects
 
-## Telecom projects used as dependencies/references
-
-| Project | License | Use in 6grok | Status |
+| Project | Upstream license | Permitted use in 6grok | Provenance requirement |
 |---|---|---|---|
-| `mbound/5grok-parser` / `think-evil/5grok-parser` | MIT | Rust parser dependency pinned to commit `1d9099d5706a55f4624c8fb01c3a2a09fa5497ad` | **Allowed**; copyright/license preserved |
-| QCSuper (`P1sec/QCSuper`) | GPL-3.0 | Qualcomm DIAG protocol/reference; possible external adapter | **Reference only**; no source copied |
-| SCAT (`fgsect/scat`) | GPL-2.0-or-later | Qualcomm/Samsung protocol/reference; possible GSMTAP interop | **Reference only**; no source copied |
-| MobileInsight | Apache-2.0 | MediaTek/Android diagnostic research; possible future selective reuse | **Permissive**, but imported files must retain Apache-2.0 notices and NOTICE obligations |
-| ShannonBaseband (`grant-h/ShannonBaseband`) | Mixed; top-level project states MIT only for explicitly SPDX-marked files | Samsung/Shannon research | **File-by-file review required** |
+| `mbound/5grok-parser` / `think-evil/5grok-parser` | MIT | Linked parser dependency | Pinned commit + retained MIT text |
+| QCSuper (`P1sec/QCSuper`) | GPL-3.0-or-later | **Source reuse/adaptation allowed in GPL application** | Preserve GPL/copyright; record exact commit/path/modifications |
+| SCAT (`fgsect/scat`) | GPL-2.0-or-later | **Source reuse/adaptation allowed in GPLv3 application** by choosing GPLv3 terms for the combined work | Preserve original GPL-2.0-or-later notice/copyright; record commit/path/modifications |
+| MobileInsight | Apache-2.0 | Source reuse/adaptation allowed | Preserve Apache-2.0 notices and any upstream NOTICE obligations |
+| FirmWire (`FirmWire/FirmWire`) | BSD-3-Clause | Source reuse/adaptation allowed where useful | Preserve BSD copyright/conditions/disclaimer |
+| ShannonBaseband (`grant-h/ShannonBaseband`) | Mixed/file-specific | Only files with a clearly compatible license may be reused | File-by-file SPDX/license review required |
+| Wireshark/libosmocore/Osmocom definitions | Various | Protocol facts and interoperability references; source import only after file-specific review | Record source/license if code is copied |
 
 ## fivegrok-parser
 
-The parser dependency is MIT licensed and states copyright:
+The parser dependency is pinned to commit:
+
+`1d9099d5706a55f4624c8fb01c3a2a09fa5497ad`
+
+It is MIT licensed and states copyright:
 
 > Copyright (c) 2024 5grok Contributors
 
-A copy of its MIT license is stored in `LICENSES/fivegrok-parser-MIT.txt` for redistribution/provenance purposes.
+Its MIT text remains preserved in `LICENSES/fivegrok-parser-MIT.txt`. The parser is not relicensed by its use inside a GPL-covered 6grok executable.
 
-## Dependency additions
+## QCSuper
 
-Before adding or vendoring a dependency, record:
+QCSuper declares GPL-3.0+ / GPL-3.0-or-later. Its code may now be copied or adapted into GPL-covered 6grok application components. When this is done, keep upstream copyright/license information and add a provenance comment identifying the upstream commit and source path.
 
-- upstream repository and immutable revision/tag;
-- license SPDX identifier;
-- copyright holder(s);
-- whether code is linked, vendored, modified, or only used as a reference;
-- location of the retained license/NOTICE text;
-- any modifications made by 6grok.
+Do not move QCSuper-derived code into a component advertised as MIT-only. If functionality needs to be shared with a permissive library, isolate an independently written interface/data model from the GPL-derived implementation.
 
-When in doubt, do not import the code until the licensing status has been reviewed.
+## SCAT
+
+SCAT declares `GPL-2.0-or-later`. This is compatible with the GPLv3 6grok application because the "or later" grant permits selecting GPLv3 terms for the combined work.
+
+SCAT-derived files must retain their `GPL-2.0-or-later` identity and copyright. Do not rewrite their file-level SPDX identifier to GPL-3.0 merely because the combined binary is distributed under GPLv3 terms.
+
+## Apache/BSD sources
+
+Apache-2.0 and BSD-3-Clause sources can be included in the GPLv3 combined application while retaining their original licenses and notices. Apache NOTICE material, when present and applicable, must be propagated as required.
+
+## Rust dependencies
+
+`cargo-deny` checks the transitive Rust dependency graph against the reviewed allowlist. It currently allows permissive licenses plus `GPL-2.0-or-later` and `GPL-3.0-or-later`; strict GPLv2, AGPL and unreviewed weak-copyleft licenses remain rejected.
+
+## New dependency or import review
+
+Before adding a dependency or vendored source, answer all of the following:
+
+1. What exact upstream revision are we using?
+2. What is the license of the exact file/revision, not merely the repository homepage?
+3. Is it compatible with the component it will enter and the final distributed work?
+4. Which notices/source-offer obligations apply when distributing binaries?
+5. Have original headers, copyright, license and NOTICE files been retained?
+6. Have modifications been clearly identified?
+
+If any answer is unclear, do not merge the import until it is resolved.
